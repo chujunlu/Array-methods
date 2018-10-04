@@ -1,0 +1,68 @@
+<script src="../tinytest.js"></script>
+<script>
+function forEach(array, callback, configurableThisObject) {
+  var forEachCallback = callback;
+
+  if (configurableThisObject) {
+    forEachCallback = callback.bind(configurableThisObject);
+  }
+
+  for (var i = 0; i < array.length; i++) {
+    if (i in array) {
+      forEachCallback(array[i], i, array);
+    }
+  }
+}
+
+tests({
+  'It should run the callback function array.length times.': function() {
+    var count = 0;
+    forEach([1, 2, 3], function() {
+      count++;
+    })
+    eq(count, 3);
+  },
+  'It should pass the ith element as the first argument to the callback.': function() {
+    forEach([1], function(number) {
+      eq(number, 1);
+    });
+  },
+  'It should pass the ith position as the second argument to the callback.': function() {
+    forEach([1], function(number, index) {
+      eq(index, 0);
+    });
+  },
+  'It should pass in the original array as the third argument to the callback.': function() {
+    var testArray = [1, 2, 3];
+    forEach(testArray, function(number, index, originalArray) {
+      eq(originalArray, testArray);
+    });
+  },
+  'It should accept a configurable this object.': function() {
+    forEach([1], function() {
+      eq(this.description, 'I am a configurable this object');
+    }, {description: 'I am a configurable this object'});
+  },
+  'It should not invoke callback for index properties that are uninitialized.': function () {
+    var count = 0;
+    forEach([,,,], function() {
+      count++;
+    })
+    eq(count, 0);
+  },
+  'If elements that are already visited are removed during the iteration, later elements will be skipped': function () {
+    var words = ['one', 'two', 'three', 'four'];
+    var newArray = [];
+    forEach(words, function(word) {
+      newArray.push(word);
+      if (word === 'two') {
+        words.shift();
+      }
+    });
+
+    eq(newArray[0], 'one');
+    eq(newArray[1], 'two');
+    eq(newArray[2], 'four');
+  }
+});
+</script>
