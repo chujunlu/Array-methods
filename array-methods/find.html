@@ -1,0 +1,97 @@
+<script src="../tinytest.js"></script>
+<script>
+  function find(array, callback, optionalThisObject) {
+    var findCallback = callback;
+
+    if (optionalThisObject) {
+      findCallback = callback.bind(optionalThisObject);
+    }
+
+    for (var i = 0; i < array.length; i++) {
+      if (findCallback(array[i], i, array)) {
+        return array[i];
+      }
+    }
+
+    return undefined;
+  }
+
+  tests({
+    'It should run the callback function once for each index of the array until it finds one where callback returns a true value.': function() {
+      var counter = 0;
+      find([1], function () {
+        counter++;
+      });
+      eq(counter, 1);
+    },
+    'It should pass the ith element as the first argument to the callback.': function() {
+      find([1], function(number) {
+        eq(number, 1);
+      });
+    },
+    'It should pass the ith position as the second argument to the callback.': function() {
+      find([1], function(number, index) {
+        eq(index, 0);
+      });
+    },
+    'It should pass in the original array as the third argument to the callback.': function() {
+      var testArray = [1, 2];
+
+      find(testArray, function(number, index, originalArray) {
+        eq(originalArray, testArray);
+      });
+    },
+    'It should accept a configurable this object.': function() {
+      find([1], function () {
+        eq(this.description, 'I am a configurable this object');
+      }, {description: 'I am a configurable this object'});
+    },
+    'It should return the value of the first element in the array that satisfies the provided testing function.': function() {
+      var result = find([1, 2, 3], function(number) {
+        return number > 1;
+      });
+      eq(result, 2);
+    },
+    'If not such a value, return undefined.': function() {
+      var result = find([1, 2, 3], function(number) {
+        return number > 3;
+      });
+      eq(result, undefined);
+    },
+    'It should be invoked for all indexes, not just those that have been assigned values.': function() {
+      var counter = 0;
+
+      find([,,,undefined, null], function () {
+        counter++;
+      });
+      eq(counter, 5);
+    },
+    'It should visit deleted elements, and its value will be the value when find visits that element index.': function () {
+      var array = [0,1,,,,5,6];
+      var result = '';
+
+      find(array, function(value, index) {
+        if (index === 0) {
+          delete array[5];
+        }
+        
+        if (index === 5) {
+          result = 'Visited index ' + index + ' with value ' + value; 
+        }
+      });
+
+      eq(result, 'Visited index 5 with value undefined');
+    },
+    'It should not mutate the array on which it is called.': function () {
+      var array = [1, 2];
+
+      find(array, function (ele) {
+        return ele > 1;
+      });
+
+      eq(array.length, 2);
+      eq(array[0], 1);
+      eq(array[1], 2);
+    }
+  }); 
+</script>
