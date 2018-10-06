@@ -1,0 +1,66 @@
+<script src="../tinytest.js"></script>
+<script>
+  function lastIndexOf(array, searchElement, fromIndex) {
+    var startingIndex = array.length - 1;
+
+    if (fromIndex) {
+      if (fromIndex >= 0 && fromIndex < array.length) {
+        startingIndex = fromIndex;
+      } else {
+        var computedIndex = array.length + fromIndex;
+
+        if (computedIndex < 0) {
+          return -1;
+        } else {
+          startingIndex = computedIndex;
+        }
+      }
+    }
+
+    for (var i = startingIndex; i >= 0; i--) {
+      if (i in array) {
+        if (array[i] === searchElement) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  tests({
+    'It should return the last index at which a given element can be found in the array.': function() {
+      var result = lastIndexOf(['Dodo', 'Tiger', 'Penguin', 'Dodo'], 'Dodo');
+      eq(result, 3);
+    },
+    'It should return -1 if searchElement is not found.': function() {
+      var result = lastIndexOf([2, 5, 9, 2], 7);
+      eq(result, -1);
+    },
+    'It should search the array backwards starting at arrar.length - 1.': function () {
+      var array = [1, 1, 1, 1, 1];
+      var result = lastIndexOf(array, 1);
+      eq(result, array.length - 1);
+    },
+    'It should accept an optional fromIndex.': function() {
+      var result = lastIndexOf([2, 5, 9, 2], 2, 2);
+      eq(result, 0);
+    },
+    'If fromIndex >= array.length, the whole array will be searched.': function() {
+      var result = lastIndexOf([2, 5, 9, 2], 2, 10);
+      eq(result, 3);
+    },
+    'If fromIndex < 0, calculate computedIndex. If computedIndex >= 0, it is used as the startingindex.':function() {
+      var result = lastIndexOf([2, 5, 9, 2], 2, -4);
+      eq(result, 0);
+    },
+    'If fromIndex < 0, calculate computedIndex. If computedIndex < 0, return -1.':function() {
+      var result = lastIndexOf([2, 5, 9, 2], 2, -5);
+      eq(result, -1);
+    },
+    'It should skip unassigned elements.': function() {
+      var result = lastIndexOf([,,,,], undefined);
+      eq(result, -1);
+    }
+  });
+</script>
