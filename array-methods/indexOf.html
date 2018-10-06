@@ -1,0 +1,74 @@
+<script src="../tinytest.js"></script>
+<script>
+  function indexOf(array, searchElement, fromIndex) {
+    if (array.length === 0) {
+      return -1;
+    }
+
+    var startingIndex = fromIndex || 0;
+
+    if (fromIndex > array.length) {
+      return -1;
+    } else if (fromIndex < 0) {
+      startingIndex = array.length + fromIndex;
+      
+      if (startingIndex < 0) {
+        startingIndex = 0;
+      }
+    }
+    
+    for (var i = startingIndex; i < array.length; i++) {
+      if (i in array) {
+        if (array[i] === searchElement) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  tests({
+    'It should return an index number.': function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'bison');
+      eq(typeof result, "number");
+    },
+    'It should return the index of the first occurrence of searchElement.': function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'bison');
+      eq(result, 1);
+    },
+    'If searchElement is not present, return -1.': function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'giraffe');
+      eq(result, -1);
+    },
+    'It should accept an optional fromIndex.': function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'bison', 2);
+      eq(result, 4);
+    },
+    'If fromIndex >= array.length, return -1.': function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'bison', 5);
+      eq(result, -1);
+    },
+    'If fromIndex < 0, add fromIndex to array.length to be computedIndex.':function () {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'duck', -1);
+      eq(result, -1);
+    },
+    'If computedIndex < 0, startingIndex will be 0.': function() {
+      var result = indexOf(['ant', 'bison', 'camel', 'duck', 'bison'], 'duck', -10);
+      eq(result, 3);
+    },
+    'It should skip holes.': function () {
+      var result = indexOf([,,,1], undefined);
+      eq(result, -1);
+    },
+    'It should return -1 for an empty array.': function () {
+      var result = indexOf([], 0);
+      eq(result, -1);
+    },
+    'Stress test for edge data types.': function () {
+      eq(indexOf([undefined], undefined), 0);
+      eq(indexOf([null], null), 0);
+      eq(indexOf([NaN], NaN), -1);
+    }
+  });
+</script>
