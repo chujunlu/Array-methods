@@ -1,0 +1,99 @@
+<script src="../simpletest.js"></script>
+<script>
+  function fill(array, value, start, end) {
+    var startIndex = start || 0;
+    var endIndex = end || array.length;
+
+    if (start < 0) {
+      startIndex = array.length + start;
+
+      if (startIndex < 0) {
+        startIndex = 0;
+      } 
+    }
+
+    if (end < 0) {
+      endIndex = array.length + end;
+
+      if (endIndex < 0) {
+        endIndex = 0;
+      }
+    } else if (end > array.length) {
+      endIndex = array.length;
+    }
+
+    for (var i = startIndex; i < endIndex; i++) {
+      array[i] = value;
+    }
+
+    return array;
+  }
+
+  tests({
+    'It will mutate and return the array, not a copy.': function () {
+      var array = [1];
+      var result = fill(array, 2);
+      eq(array, result);
+    },
+    'It should fill elements of an array with a static value.': function () {
+      var result = fill([1, 2, 3], 4);
+      result.forEach(function (ele) {
+        eq(ele, 4);
+      });
+    },
+    'It should accept an optional start index as the third argument.': function () {
+      var result = fill([1, 2, 3], 4, 1);
+      eq(result[0], 1);
+      eq(result[1], 4);
+      eq(result[2], 4);
+    },
+    'If start < 0, caculate array.length + start as computedStart.': function () {
+      var result = fill([1, 2, 3], 4, -2);
+      eq(result[0], 1);
+      eq(result[1], 4);
+      eq(result[2], 4);
+    },
+    'If computedStart < 0, startIndex will be 0.': function () {
+      var result = fill([1, 2, 3], 4, -4);
+      result.forEach(function (ele) {
+        eq(ele, 4);
+      });
+    },
+    'It should accept an optional end index as the fourth argument.': function () {
+      var result = fill([1, 2, 3], 4, 1, 2);
+      eq(result[0], 1);
+      eq(result[1], 4);
+      eq(result[2], 3);
+    },
+    'If end < 0, caculate array.length + end as computedEnd.': function () {
+      var result = fill([1, 2, 3], 4, 0, -2);
+      eq(result[0], 4);
+      eq(result[1], 2);
+      eq(result[2], 3);
+    },
+    'If computedEnd < 0, the array will not be undated.': function () {
+      var result = fill([1, 2, 3], 4, 0, -5);
+      eq(result[0], 1);
+      eq(result[1], 2);
+      eq(result[2], 3);
+    },
+    'If end > array.length, endIndex will be array.length.': function () {
+      var result = fill([1, 2, 3], 4, 0, 5);
+      result.forEach(function (ele) {
+        eq(ele, 4);
+      });
+    },
+    'It should copy the reference and fill the array with references to an object.': function() {
+      var result = fill(Array(3), {});//[{}, {}, {}]; The three objects are the same object.
+      result[0].hi = "hi";//Update one, doesn't mater which one, update everyone.
+      eq(result[1].hi, result[2].hi);
+    },
+    'It should work for an array-like object.': function () {
+      var result = fill({length: 3}, 4);//[].fill.call({ length: 3 }, 4);
+      eq(typeof result, "object");
+      eq(result[0], 4);
+      eq(result[1], 4);
+      eq(result[2], 4);
+    }
+  });
+</script>
