@@ -1,0 +1,119 @@
+<script src="../simpletest.js"></script>
+<script>
+  function pop(array) {
+    if (array.length === undefined || isNaN(Number(array.length)) || array.length <= 0) {
+      array.length = 0;
+      return undefined;
+    } else {
+      array.length = Math.floor(array.length);
+
+      var removed = array[array.length - 1];
+
+      if (Object.prototype.toString.call(array) === "[object Object]") {
+        delete array[array.length - 1];
+      }
+
+      array.length--;
+    }
+    
+    return removed;
+  }
+
+  tests({
+    '1.It should remove the last element from an array.': function() {
+      var array = ['broccoli', 'cauliflower', 'cabbage', 'kale', 'tomato'];
+      pop(array);
+      eq(array.length, 4);
+      eq(array.includes('tomato'), false);
+    },
+    '2.It should return the removed element.': function() {
+      var result = pop(['broccoli', 'cauliflower', 'cabbage', 'kale', 'tomato']);
+      eq(result, "tomato");
+    },
+    '3.If array is empty, return undefined.': function() {
+      var result = pop([]);
+      eq(result, undefined);
+    },
+    '4.It should work for an array-like object.': function () {
+      var object = {
+        length: 3,
+        0: 'traveling',
+        1: 'rock climbing',
+        2: 'sailing'
+      }
+      var result = pop(object);
+      eq(result, "sailing");
+      eq(2 in object, false);
+    },
+    '5.It should remove element accodring to length property for an array-like object.': function () {
+      var object = {
+        0: 'traveling',
+        1: 'rock climbing',
+        length: 1
+      };
+      var result = pop(object);
+      eq(result, "traveling");
+      eq(object[0], undefined);
+      eq(object[1], "rock climbing");
+      eq(object.length, 0);
+    },
+    '6.If called on an object with no length property, length will be created and will be 0. Remove nothing.': function () {
+      var object = {
+        0: 'traveling'
+      };
+      var result = pop(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '7.If the length property cannot be converted to a number, length will be 0. Remove nothing.': function () {
+      var object = {
+        0: 'traveling',
+        length: 'chujun'
+      };
+      var result = pop(object);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '8.If the length property can be converted to a number, use its integer part as length.': function () {
+      var object = {
+        0: 'traveling',
+        length: '1.8'
+      };
+      var result = pop(object);
+      eq(result, "traveling");
+      eq(object[0], undefined);
+      eq(object.length, 0);
+    },
+    '9.If called on an object with length property as 0, nothing will be removed.': function () {
+      var object = {
+        0: 'traveling',
+        length: 0
+      };
+      var result = pop(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '10.If length is a decimal number, use its integer part as length.': function () {
+      var object = {
+        0: 'traveling',
+        length: 2.8
+      };
+      var result = pop(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 1);
+    },
+    '11.If length < 0, length will be 0 and nothing will be removed.': function () {
+      var object = {
+        0: 'traveling',
+        length: -1.8
+      };
+      var result = pop(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    }
+  });
+</script>
