@@ -1,0 +1,109 @@
+<script src="../simpletest.js"></script>
+<script>
+  Array.prototype.myPush = function () {
+    if (Object.prototype.toString.call(this) === "[object Object]") {
+      if (this.length === undefined || isNaN(Number(this.length)) || this.length < 0) {
+        this.length = 0;
+      } else {
+        this.length = Math.floor(this.length);
+      }
+
+      for (var i = 0; i < arguments.length; i++) {
+        this[this.length] = arguments[i];
+        this.length++;
+      }
+
+    } else {
+      for (var i = 0; i < arguments.length; i++) {
+        this[this.length] = arguments[i];
+      }
+    }
+
+    return this.length;
+  }
+
+  tests({
+    'It should add one or more elements to the end of an array.': function () {
+      var sports = ['soccer', 'baseball'];
+      sports.myPush('football', 'swimming');
+      eq(sports[2], "football");
+      eq(sports[3], "swimming");
+    },
+    'It should return the new length of the array.': function () {
+      var sports = ['soccer', 'baseball'];
+      var result = sports.myPush('football', 'swimming');
+      eq(result, 4);
+    },
+    'It should be able to merge two arrays.': function () {
+      var vegetables = ['parsnip', 'potato'];
+      var moreVegs = ['celery', 'beetroot'];
+      var result = [].myPush.apply(vegetables, moreVegs);
+      eq(result, 4);//['parsnip', 'potato', 'celery', 'beetroot']
+    },
+    'It should handle different data types.': function () {
+      var array = [];
+      var three = ['three'];
+      var four = {four: 'four'};
+      var five = function () {};
+      array.myPush(1, 'two', three, four, five);
+      var comparison = [1, 'two', three, four, five];
+      comparison.forEach(function (ele, i) {
+        eq(ele, array[i]);
+      });
+    },
+    'It should work for an array-like object.': function () {
+      var obj = {
+        length: 0,
+        addElem: function addElem(elem) {
+          [].myPush.call(this, elem);
+        }
+      };
+      obj.addElem({});
+      obj.addElem({});
+      eq(JSON.stringify(obj), '{"0":{},"1":{},"length":2}');
+    },
+    'It increase the length property of object for each element pushed.': function () {
+      var obj = {length: 0};
+      [].myPush.call(obj, 1);
+      [].myPush.call(obj, 'hi');
+      eq(obj[0], 1);
+      eq(obj[1], "hi");
+      eq(obj.length, 2);
+    },
+    'If length property cannot be converted into a number, use 0.': function () {
+      var obj = {length: 'chujun'};
+      [].myPush.call(obj, 'lu');
+      eq(obj[0], "lu");
+      eq(obj.length, 1);
+    },
+    'If length is a positive decimal number, its integer part will be used as length.': function () {
+      var obj = {length: 3.44};
+      [].myPush.call(obj, 'lu');
+      eq(obj[3], "lu");
+      eq(obj.length, 4);
+
+      var objTwo = {length: 3.84};
+      [].myPush.call(objTwo, 'lu');
+      eq(objTwo[3], "lu");
+      eq(objTwo.length, 4);
+    },
+    'If length < 0, length = 0.': function () {
+      var obj = {length: -2};
+      [].myPush.call(obj, 'lu');
+      eq(obj[0], "lu");
+      eq(obj.length, 1);
+    },
+    'If length is nonexistent, length will be created and will be 0.': function () {
+      var obj = {
+        0: 'traveling',
+        1: 'rock climbing',
+        2: 'sailing'
+      };
+      [].myPush.call(obj, 'running');
+      eq(obj[0], "running");
+      eq(obj[1], "rock climbing");
+      eq(obj[2], "sailing");
+      eq(obj.length, 1);
+    }
+  });
+</script>
