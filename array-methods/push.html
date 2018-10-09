@@ -4,7 +4,7 @@
     if (array.length === undefined || isNaN(Number(array.length)) || array.length < 0) {
       array.length = 0;
     } else {
-      array.length = Math.floor(array.length);
+      array.length = parseInt(array.length, 10);
     }
 
     if (Array.isArray(arguments[1])) {
