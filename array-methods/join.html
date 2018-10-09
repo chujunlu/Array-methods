@@ -1,0 +1,100 @@
+<script src="../tinytest.js"></script>
+<script>
+  function join(array, optionalSeparator) {
+    var resultSoFar = '';
+    var separator;
+
+    if (optionalSeparator === undefined) {
+      separator = ',';
+    } else {
+      separator = optionalSeparator.toString();
+    }
+
+    if (array[0] === undefined || array[0] === null) {
+      resultSoFar = '';
+    } else {
+      resultSoFar = array[0].toString();
+    }
+
+    for (var i = 1; i < array.length; i++) {
+      if (array[i] === undefined || array[i] === null) {
+        resultSoFar = resultSoFar + separator;
+      } else {
+        resultSoFar = resultSoFar + separator + array[i].toString();
+      }
+    }
+    //Option2:
+    // for (var i = 0; i < array.length; i++) {
+    //   if (array[i] === undefined || array[i] === null) {
+    //     resultSoFar += '';
+    //   } else {
+    //     resultSoFar += array[i].toString();
+    //   }
+
+    //   if (i !== array.length - 1) {
+    //     resultSoFar += separator;
+    //   }
+    // }
+
+    return resultSoFar;
+  }
+
+  tests({
+    'It should return a string.': function() {
+      var result = join([1, 2, 3]);
+      eq(typeof result, "string");
+    },
+    'It should join all elements of an array.': function() {
+      var result = join(['number', 1, 2, 3]);
+      eq(result, "number,1,2,3");
+    },
+    'It should accept an optional separator.': function() {
+      var result = join([1, 2, 3], ' + ');
+      eq(result, "1 + 2 + 3");
+    },
+    'If separator is omitted, array elements are separated with a comma.': function () {
+      var result = join([1, 2, 3]);
+      eq(result, "1,2,3");
+    },
+    'If separator is an empty string, all elements are joined without any characters in between.': function() {
+      var result = join([1, 2, 3], '');
+      eq(result, "123");
+    },
+    'It should return an empty string for an empty array.': function() {
+      var result = join([], '+');
+      eq(result, "");
+    },
+    'If an element is undefined, null, or an empty string, and separator is ommited, array elements are joined with a comma as separator.': function() {
+      var result = join([,,,,undefined, null, NaN, '',]);
+      eq(result, ",,,,,,NaN,");
+    },
+    'If there are holes, and there is an optionalSeparator, array elements are separated with optionalSeparator.': function() {
+      var result = join([,undefined,,,,null], '+');
+      eq(result, "+++++");
+    },
+    'If there are holes, and optionalSeparator is an empty string, all elements are joined together.': function() {
+      var result = join([1,,,,undefined, 1, ,null,2, 3], '');
+      eq(result, "1123");
+    },
+    'It should join an array-like object.': function () {
+      function f() {
+        var s = join(arguments, '+');
+        return s;
+      }
+      var result = f(1, 'a', true, 'b');
+      eq(result, "1+a+true+b");
+    },
+    'It should return a string representing the object.': function () {
+      var result = join([{}, {hi: "hi"}]);
+      eq(result, "[object Object],[object Object]");
+    },
+    'It should work for nested arrays.': function () {
+      var result = join(['one', ['two', ['three', ['four'], 'five']]]);
+      eq(result, "one,two,three,four,five");
+    },
+    'It should work for functions.': function () {
+      var result = join([function hey(){}, function hi(){},]);
+      eq(result, "function hey(){},function hi(){}");
+    }
+  });
+</script>
