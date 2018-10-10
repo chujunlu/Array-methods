@@ -34,7 +34,13 @@
       var result = pop([]);
       eq(result, undefined);
     },
-    '4.It should work for an array-like object.': function () {
+    '4.It should work for holes.': function () {
+      var array = [,,,];
+      var result = pop(array);
+      eq(result, undefined);
+      eq(array.length, 2);
+    },
+    '5.It should work for an array-like object.': function () {
       var object = {
         length: 3,
         0: 'traveling',
@@ -45,7 +51,7 @@
       eq(result, "sailing");
       eq(2 in object, false);
     },
-    '5.It should remove element accodring to length property for an array-like object.': function () {
+    '6.It should remove element accodring to length property for an array-like object.': function () {
       var object = {
         0: 'traveling',
         1: 'rock climbing',
@@ -57,7 +63,7 @@
       eq(object[1], "rock climbing");
       eq(object.length, 0);
     },
-    '6.If called on an object with no length property, length will be created and will be 0. Remove nothing.': function () {
+    '7.If called on an object with no length property, length will be created and will be 0. Remove nothing.': function () {
       var object = {
         0: 'traveling'
       };
@@ -66,7 +72,7 @@
       eq(object[0], "traveling");
       eq(object.length, 0);
     },
-    '7.If the length property cannot be converted to a number, length will be 0. Remove nothing.': function () {
+    '8.If the length property cannot be converted to a number, length will be 0. Remove nothing.': function () {
       var object = {
         0: 'traveling',
         length: 'chujun'
@@ -75,7 +81,7 @@
       eq(object[0], "traveling");
       eq(object.length, 0);
     },
-    '8.If the length property can be converted to a number, use its integer part as length.': function () {
+    '9.If the length property can be converted to a number, use its integer part as length.': function () {
       var object = {
         0: 'traveling',
         length: '1.8'
@@ -85,7 +91,7 @@
       eq(object[0], undefined);
       eq(object.length, 0);
     },
-    '9.If called on an object with length property as 0, nothing will be removed.': function () {
+    '10.If called on an object with length property as 0, nothing will be removed.': function () {
       var object = {
         0: 'traveling',
         length: 0
@@ -95,7 +101,7 @@
       eq(object[0], "traveling");
       eq(object.length, 0);
     },
-    '10.If length is a decimal number, use its integer part as length.': function () {
+    '11.If length is a decimal number, use its integer part as length.': function () {
       var object = {
         0: 'traveling',
         length: 2.8
@@ -105,7 +111,7 @@
       eq(object[0], "traveling");
       eq(object.length, 1);
     },
-    '11.If length < 0, length will be 0 and nothing will be removed.': function () {
+    '12.If length < 0, length will be 0 and nothing will be removed.': function () {
       var object = {
         0: 'traveling',
         length: -1.8
