@@ -1,0 +1,178 @@
+<script src="../simpletest.js"></script>
+<script>
+  function shift(array) {
+    if (array.length === undefined || isNaN(Number(array.length)) || array.length <= 0) {
+      array.length = 0;
+      return undefined;
+    } else {
+      array.length = Math.floor(array.length);
+
+      var removed = array[0];
+      //My solution
+      for (var i = 0; i < array.length - 1; i++) {
+        array[i] = array[i+1];
+      }
+
+      if (Object.prototype.toString.call(array) === "[object Object]") {
+        delete array[array.length - 1];
+
+        for (var key in array) {
+          if (array[key] === undefined) {
+            delete array[key];
+          }
+        }
+      }
+      
+      //Solution from ECMA Script
+      // for (var i = 1; i < array.length; i++) {
+      //   if (Object.prototype.hasOwnProperty.call(array, i)) {
+      //     array[i-1] = array[i];
+      //   } else {
+      //     delete array[i-1];
+      //   }
+      // }
+      
+      // delete array[array.length - 1];//For array, it will delete element but keep length unchanged.
+      
+      //Solution 2 ends
+
+      array.length--;//Delete the last index postion in array. Update both array and object's length porperty.
+
+      return removed;
+    }
+  }
+
+  tests({
+    '1.It should remove the element at the zeroeth index.': function () {
+      var array = [1, 2, 3];
+      shift(array);
+      eq(array.includes(1), false);
+    },
+    '2.It should shift the values at consecutive indexes down.': function () {
+      var array = [1, 2, 3];
+      shift(array);
+      eq(array[0], 2);
+      eq(array[1], 3);
+    },
+    '3.It should return the removed element.': function () {
+      var array = [1, 2, 3];
+      var result = shift(array);
+      eq(result, 1);
+    },
+    '4.It should change the length of the array.': function () {
+      var array = [1, 2, 3];
+      shift(array);
+      eq(array.length, 2);
+    },
+    '5.If array is empty, return undefined.': function () {
+      var result = shift([]);
+      eq(result, undefined);
+    },
+    '6.It should return an undefined value and decrease length by one for empty indexes.': function () {
+      var array = [,,,];
+      var result = shift(array);
+      eq(result, undefined);
+      eq(array.length, 2);
+    },
+    '7.It can be called or applied to objects resembling arrays.': function () {
+      var object = {
+        length: 3,
+        0: 'traveling',
+        1: 'rock climbing',
+        2: 'sailing'
+      };
+      var result = shift(object);//[].shift.call(object); 
+      eq(result, "traveling");
+      eq(object[0], "rock climbing");
+      eq(object[1], "sailing");
+      eq(object.length, 2);
+    },
+    '8.If object.length is not accurate, it still removes the zeroeth porperty.': function () {
+      var object = {
+        0: 'traveling',
+        1: 'rock climbing',
+        length: 1
+      };
+      var result = shift(object);
+      eq(result, "traveling");
+      eq(0 in object, false);
+      eq(object[1], "rock climbing");
+      eq(object.length, 0);
+    },
+    '9.If called on an object with no length property, length will be created and will be 0. Remove nothing.': function () {
+      var object = {
+        0: 'traveling'
+      };
+      var result = shift(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '10.If the length property cannot be converted to a number, length will be 0. Remove nothing.': function () {
+      var object = {
+        0: 'traveling',
+        length: 'chujun'
+      };
+      var result = shift(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '11.If the length property can be converted to a number, use its integer part as length.': function () {
+      var object = {
+        0: 'traveling',
+        1: 'rock climbing',
+        length: '2.8'
+      };
+      var result = shift(object);
+      eq(result, "traveling");
+      eq(object[0], "rock climbing");
+      eq(object.length, 1);
+    },
+    '12.If called on an object with length property as 0, nothing will be removed.': function () {
+      var object = {
+        0: 'traveling',
+        length: 0
+      };
+      var result = shift(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '13.If length is a decimal number, use its integer part as length.': function () {
+      var object = {
+        0: 'traveling',
+        1: 'rock climbing',
+        length: 3.8
+      };
+      var result = shift(object);
+      eq(result, "traveling");
+      eq(object[0], "rock climbing");
+      eq(1 in object, false);
+      eq(object.length, 2);
+    },
+    '14.If length < 0, length will be 0 and nothing will be removed.': function () {
+      var object = {
+        0: 'traveling',
+        length: -1.8
+      };
+      var result = shift(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(object.length, 0);
+    },
+    '15.It should remove the array.length - 1 property if no zeroeth property.': function () {
+      var object = {
+        1: 'traveling',
+        2: 'rock climbing',
+        length: '2.8'
+      };
+      var result = shift(object);
+      eq(result, undefined);
+      eq(object[0], "traveling");
+      eq(1 in object, false);
+      eq(object[2], "rock climbing");
+      eq(object.length, 1);
+    }
+  });
+</script>
