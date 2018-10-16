@@ -1,0 +1,98 @@
+<script src="../simpletest.js"></script>
+<script>
+  function unshift(array) {
+    if (Array.isArray(array)) {
+      var original = array.slice();
+    } 
+
+    if (Object.prototype.toString.call(array) === "[object Object]") {
+      var original = {};
+      for (var key in array) {
+        if (array.hasOwnProperty(key)) {
+          original[key] = array[key];
+        }
+      }
+    }
+
+    var indexInOriginal = 0;
+    var indexInArgument = 1;
+    array.length = array.length + arguments.length - 1;
+
+    for (var k = 0; k < array.length; k++) {
+      if (indexInArgument in arguments) {//if there is element to be added
+        array[k] = arguments[indexInArgument];
+        indexInArgument++;
+      } else {
+        if (indexInOriginal in original) {
+          array[k] = original[indexInOriginal];
+          indexInOriginal++;
+        }
+      }
+    }
+
+    return array.length;
+
+    //Solution from ECMA Script
+    // var len = array.length;
+    // var argCount = arguments.length - 1;
+
+    // for (var k = len; k > 0; k--) {
+    //   if (array.hasOwnProperty(k-1)) {
+    //     array[k + argCount - 1] = array[k - 1];
+    //   } else {
+    //     delete array[k + argCount - 1];
+    //   }
+    // }
+
+    // var argIndex = 1;
+    // for (var j = 0; j < argCount; j++) {
+    //   array[j] = arguments[argIndex];
+    //   argIndex++;
+    // }
+    
+    // array.length = len + argCount;
+
+    // return array.length;
+  }
+
+  tests({
+    'It should return the new length.': function () {
+      var array = [1, 2];
+      var result = unshift(array, 0);
+      eq(result, 3);
+    },
+    'It should add one element to the front of an array.': function () {
+      var array = [1, 2];
+      unshift(array, 0);
+      eq(array[0], 0);
+    },
+    'It adds n elements to array at a given order.': function () {
+      var fish = ['clown'];
+      unshift(fish, 'angel', 'sturgeon');
+      eq(fish[0], 'angel');
+      eq(fish[1], 'sturgeon');
+      eq(fish[2], 'clown');
+    },
+    'If there are not elements to add, return the original array.length.': function () {
+      var array = [1];
+      var result = unshift(array);
+      eq(result, 1);
+    },
+    'It works for holes.': function () {
+      var array = [,,,];
+      var result = unshift(array, undefined);
+      eq(result, 4);
+    },
+    'It can be called or applied to an array-like object.': function () {
+      var object = {
+        length: 3,
+        0: "traveling",
+        1: "rock climbing",
+        2: "sailing"
+      };
+      unshift(object, "surfing");
+      eq(object.length, 4);
+      eq(object[0], "surfing");
+    }
+  });
+</script>
