@@ -1,0 +1,56 @@
+<script src="../simpletest.js"></script>
+<script>
+  function reverse(array) {
+    var copy = Array.prototype.slice.call(array);
+    var endIndex = copy.length - 1;
+
+    for (var i = 0; i < array.length; i++) {
+      if (endIndex in copy) {
+        array[i] = copy[endIndex];
+      } else {
+        delete array[i];
+      }
+
+      endIndex--;
+    }
+
+    return array;
+  }
+
+  tests({
+    'It should return an array.': function () {
+      var result = reverse([]);
+      eq(Array.isArray(result), true);
+    },
+    'It should transpose the elements of the array.': function () {
+      var testArray = [1, 2, 3];
+      var result = reverse(testArray);
+      eq(result[0], 3);
+      eq(result[1], 2);
+      eq(result[2], 1);
+    },
+    'It should return a reference to the reversed array.': function () {
+      var testArray = [1, 2, 3];
+      var result = reverse(testArray);
+      eq(result, testArray);
+    },
+    'It should not substitute holes for undefined.': function () {
+      var testArray = [, 1, , 2, ,];
+      var result = reverse(testArray);
+      eq(result.length, 5);
+      eq(0 in result, false);
+      eq(2 in result, false);
+      eq(4 in result, false);
+    },
+    'It should work for an array-like object.': function () {
+      var object = {
+        length: 2,
+        0: 'traveling',
+        1: 'rock climbing'
+      };
+      var result = reverse(object);
+      eq(result[0], "rock climbing");
+      eq(result[1], "traveling");
+    }
+  });
+</script>
