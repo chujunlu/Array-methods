@@ -1,0 +1,101 @@
+<script src="../tinytest.js"></script>
+<script>
+  function findIndex(array, callback, optionalThis) {
+    if (typeof callback !== "function") {
+      throw new TypeError('Pass in a callback function as 2nd argument');
+    }
+
+    var findIndexCallback = callback;
+
+    if (optionalThis) {
+      findIndexCallback = callback.bind(optionalThis);
+    }
+
+    for (var i = 0; i < array.length; i++) {
+      if (findIndexCallback(array[i], i, array)) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  tests({
+    'It should run the callback function array.length times.': function() {
+      var counter = 0;
+      findIndex([1], function () {
+        counter++;
+      });
+      eq(counter, 1);
+    },
+    'It should pass the ith element as the first argument to the callback.': function() {
+      findIndex([1], function(number) {
+        eq(number, 1);
+      });
+    },
+    'It should pass the ith position as the second argument to the callback.': function() {
+      findIndex([1], function(number, index) {
+        eq(index, 0);
+      });
+    },
+    'It should pass in the original array as the third argument to the callback.': function() {
+      var testArray = [1, 2];
+      findIndex(testArray, function(number, index, originalArray) {
+        eq(originalArray, testArray);
+      });
+    },
+    'It should accept a configurable this object.': function() {
+      findIndex([1], function () {
+        eq(this.description, 'I am a configurable this object');
+      }, {description: 'I am a configurable this object'});
+    },
+    'It should return the index of the first element in the array that satisfies the provided testing function.': function() {
+      var result = findIndex([1, 2, 3], function(number) {
+        return number > 1;
+      });
+      eq(result, 1);
+    },
+    'If not such a value, return -1.': function() {
+      var result = findIndex([1, 2, 3], function(number) {
+        return number > 3;
+      });
+      eq(result, -1);
+    },
+    'If array is empty, return -1.': function() {
+      var result = findIndex([], function(number) {
+        return number > 1;
+      });
+      eq(result, -1);
+    },
+    'It should run callback for indexes of entries not present in the array.': function () {
+      var counter = 0;
+      findIndex([,,,], function () {
+        counter++;
+      });
+      eq(counter, 3);
+    },
+    'If the second argument is not a callback function, throw a TypeError.': function () {
+      var isTypeError = false;
+
+      try {
+        findIndex([0], 'chujun');
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+
+      eq(isTypeError, true);
+    },
+    'It should work for an array-like object.': function () {
+      var object = {
+        length: 3,
+        0: 0,
+        1: 1,
+        2: 2
+      };
+      var result = findIndex(object, function (num) {
+        return num > 1;
+      });
+      eq(result, 2);
+    }
+  });
+</script>
