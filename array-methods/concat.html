@@ -1,0 +1,182 @@
+<script src="../tinytest.js"></script>
+<script>
+  function concat() {
+    var concated = [];
+
+    for (var i = 0; i < arguments.length; i++) {
+      if (Array.isArray(arguments[i])) {
+        for (var j = 0; j < arguments[i].length; j++) {
+          if (j in arguments[i]) {
+            concated.push(arguments[i][j]);
+          } else {
+            concated.length++;
+          }
+        }
+      } else {
+        if (i === 0) {
+          if (Object.prototype.toString.call(arguments[i]) === "[object Object]") {
+            concated.push(arguments[i]);
+          } else {
+            if (arguments[i] === null || arguments[i] === undefined) {
+              throw new TypeError('Do not pass in null or undefined as the 1st argument.');
+            } else if (typeof arguments[i] === "number" || typeof arguments[i] === "string" || typeof arguments[i] === "boolean" || typeof arguments[i] === "symbol") {
+              let toObject = Object(arguments[i]);
+              concated.push(toObject);
+            }
+          }
+        } else {//i !== 0
+          concated.push(arguments[i]);
+        }
+      }
+    }
+    return concated;
+  }
+
+  tests({
+    'It should return an array.': function () {
+      var array1 = ['a'];
+      var array2 = [1];
+      var result = concat(array1, array2);
+      eq(Array.isArray(result), true);
+    },
+    'It should return a new array.': function () {
+      var array1 = ['a'];
+      var array2 = [1];
+      var result = concat(array1, array2);
+      eq(result !== array1, true);
+      eq(result !== array2, true);
+    },
+    'If only one argument, return a new array with element(s) equal to element(s) in the argument array.': function () {
+      var result = concat([1]);
+      eq(result[0], 1);
+    },
+    'It should not alter any of the arrays provided as arguments.': function () {
+      var array1 = ['a', 'b', 'c'];
+      var original1 = ['a', 'b', 'c'];
+      var array2 = [1, 2, 3];
+      var original2 = [1, 2, 3];
+      concat(array1, array2);
+      array1.forEach(function (ele, i) {
+        eq(ele, original1[i]);
+      });
+      array2.forEach(function (ele, i) {
+        eq(ele, original2[i]);
+      });
+    },
+    'It should merge two or more arrays.': function () {
+      var array1 = [1, 2, 3],
+          array2 = [4, 5, 6],
+          array3 = [7, 8, 9];
+      var expected = [1,2,3,4,5,6,7,8,9];
+      var result = concat(array1, array2, array3);
+      result.forEach(function (ele, i) {
+        eq(ele, expected[i]);
+      });
+    },
+    'It handles other data types besides arrays by adding them to the new array.': function () {
+      var result = concat([0], true, 5, 'string', {}, function () {}, null, undefined, NaN);
+      eq(result.toString(), "0,true,5,string,[object Object],function () {},,,NaN");
+    },
+    'It should merge arrays and other data types.': function () {
+      var array = ['a', 'b', 'c'];
+      var expected = ["a", "b", "c", 1, "a", true, 2, 3];
+      var result = concat(array, 1, 'a', true, [2, 3]);
+      result.forEach(function (ele, i) {
+        eq(ele, expected[i]);
+      });
+    },
+    'It should accept empty arrays.': function () {
+      var array1 = [],
+          array2 = [1, 2],
+          array3 = [];
+      var expected = [1, 2];
+      var result = concat(array1, array2, array3);
+      result.forEach(function (ele, i) {
+        eq(ele, expected[i]);
+      });
+    },
+    'It should not recursively add elements of nested arrays.': function () {
+      var array1 = [[1]],
+          array2 = [2, [3]];
+      var result = concat(array1, array2);
+      eq(result.length, 3);
+      eq(result[0][0], 1);
+      eq(result[1], 2);
+      eq(result[2][0], 3);
+    },
+    'It should copy object references into the new array.': function () {
+      var object = {name: 'chujun'};
+      var result = concat([1], object);
+      eq(result.length, 2);
+      eq(result[0], 1);
+      eq(result[1].name, "chujun");
+      object.name = 'adrienne';
+      eq(result[1].name, "adrienne");
+    },
+    'It should accept holes.': function () {
+      var array = [,,,];
+      var result = concat(array, 1);
+      eq(result.length, 4);
+      eq(0 in result, false);
+    },
+    'If pass in an object as 1st argument, add the object reference to the new array.': function () {
+      var object = {1: 1};
+      var expected = [object, 1];
+      var result = concat(object, 1);
+      result.forEach(function (ele, i) {
+        eq(ele, expected[i]);
+      });
+    },
+    'If pass in null as 1st argument, throw a TypeError.': function () {
+      var isTypeError = false;
+
+      try {
+        concat(null, 1);
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
+    },
+    'If pass in undefined as 1st argument, throw a TypeError.': function () {
+      var isTypeError = false;
+
+      try {
+        concat(undefined, 'hi');
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
+    },
+    'If pass in a number as 1st argument, it should turn it to a number object.': function () {
+      var result = concat(1, 1);
+      eq(result.length, 2);
+      eq(typeof result[0], "object");
+      eq(typeof result[1], "number");
+      eq(Number.prototype.isPrototypeOf(result[0]), true);
+      eq(Number.prototype.isPrototypeOf(result[1]), false);
+    },
+    'If pass in a string as 1st argument, it should turn it to a string object.': function () {
+      var result = concat('hi', 'hi');
+      eq(result.length, 2);
+      eq(typeof result[0], "object");
+      eq(typeof result[1], "string");
+      eq(String.prototype.isPrototypeOf(result[0]), true);
+      eq(String.prototype.isPrototypeOf(result[1]), false);
+    },
+    'If pass in a boolean as 1st argument, it should turn it to a boolean object.': function () {
+      var result = concat(true, false);
+      eq(result.length, 2);
+      eq(typeof result[0], "object");
+      eq(typeof result[1], "boolean");
+      eq(Boolean.prototype.isPrototypeOf(result[0]), true);
+      eq(Boolean.prototype.isPrototypeOf(result[1]), false);
+    },
+    'If pass in a symbol as 1st argument, it should turn it to a symbol object.': function () {
+      var symbol1 = Symbol(42);
+      var symbol2 = Symbol('foo');
+      var result = concat(symbol1, symbol2);
+      eq(typeof result[0], "object");
+      eq(typeof result[1], "symbol");
+    }
+  });
+</script>
