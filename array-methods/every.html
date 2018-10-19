@@ -1,0 +1,94 @@
+<script src="../simpletest.js"></script>
+<script>
+  function every(array, callback, optionalThis) {
+    var everyCallback = callback;
+
+    if (optionalThis) {
+      everyCallback = callback.bind(optionalThis);
+    }
+
+    for (var i = 0; i < array.length; i++) {
+      if (i in array) {
+        if (everyCallback(array[i], i, array) === false) {
+          return false;
+        }
+      } 
+    }
+
+    return true;
+  }
+  tests({
+    'It should pass the ith element as the first argument to the callback.': function () {
+      every([1], function (element) {
+        eq(element, 1);
+      });
+    },
+    'It should pass the ith position as an optional second argument to the callback.': function () {
+      every([1], function (element, index) {
+        eq(index, 0);
+      });
+    },
+    'It should pass in the original array as an optional third argument to the callback.': function () {
+      var array = [1, 2, 3];
+      every(array, function(element, index, originalArray) {
+        eq(originalArray, array);
+      });
+    },
+    'It should accept an optional this object.': function () {
+      every([1], function() {
+        eq(this.description, "I am a configurable this object");
+      }, {description: 'I am a configurable this object'});
+    },
+    'It should run callback once for each element in the array until it finds one where callback returns a falsy value.': function () {
+      var counter = 0;
+      every([1, 2, 3, 4], function(element) {
+        counter++;
+        return element < 3;
+      });
+      eq(counter, 3);
+    },
+    'It should return true when callback returns a truthy value for all elements.': function () {
+      var result = every([1, 2, 3, 4], function (element) {
+        return element < 5;
+      });
+      eq(result, true);
+    },
+    'It should return false if one element does not pass test in callback.': function () {
+      var result = every([1, 2, 3, 4], function (element) {
+        return element < 3;
+      });
+      eq(result, false);
+    },
+    'It should skip holes.': function () {
+      var counter = 0;
+      var array = [,,1, 2,,3, 4]
+      var result = every(array, function (element) {
+        counter++;
+        return element < 5;
+      });
+      eq(counter, Object.keys(array).length);
+    },
+    'It should return true for an empty array.': function () {
+      var resultOne = every([], function (element) {
+        return element < 0;
+      });
+      eq(resultOne, true);
+      var resultTwo = every([,,,], function (element) {
+        return element < 0;
+      });
+      eq(resultTwo, true);
+    },
+    'It can run on an array-like object.': function () {
+      var object = {
+        length: 3,
+        0: 'traveling',
+        1: 'rock climbing',
+        2: 'sailing'
+      };
+      var result = every(object, function (ele) {
+        typeof ele === "string";
+      });
+      eq(result, true);
+    }
+  });
+</script>
