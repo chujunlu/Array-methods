@@ -1,0 +1,134 @@
+<script src="../tinytest.js"></script>
+<script>
+function filter(array, callback, optionalThis) {
+  var filterCallback = callback;
+  var filteredArray = [];
+
+  if (array.length === undefined || isNaN(Number(array.length)) || array.length <= 0) {
+    array.length = 0;
+  } else {
+    array.length = Math.floor(Number(array.length));
+  }
+
+  if (arguments.length > 2) {
+    filterCallback = callback.bind(optionalThis);
+  }
+
+  for (var i = 0; i < array.length; i++) {
+    if (i in array) {
+      if (filterCallback(array[i], i, array)) {
+        filteredArray.push(array[i]);
+      }
+    }
+  }
+
+  return filteredArray;
+}
+
+tests({
+  'It should run the callback function array.length times.': function() {
+    var counter = 0;
+    filter([1, 2, 3], function() {
+      counter++;
+    });
+    eq(counter, 3);
+  },
+  'It should pass the ith element as the first argument to the callback.': function() {
+    filter([1], function(ele) {
+      eq(ele, 1);
+    });
+  },
+  'It should pass the ith position as the second argument to the callback.': function() {
+    filter([1], function(ele, index) {
+      eq(index, 0);
+    });
+  },
+  'It should pass the original array as the third argument to the callback.': function() {
+    var testArray = [1, 2, 3];
+    filter(testArray, function(ele, index, originalArray) {
+      eq(originalArray, testArray);
+    });
+  },
+  'It should accept an optional this object.': function() {
+    filter([1], function() {
+      eq(this.description, 'I am a configurable this object');
+    }, {description: 'I am a configurable this object'});
+  },
+  'It should return an array.': function() {
+    var filteredArray = filter([], function() {});
+    eq(Array.isArray(filteredArray), true);
+  },
+  'It should return a new array, not the array being filtered.': function() {
+    var arrayBeingFiltered = [];
+    var filteredArray = filter(arrayBeingFiltered, function() {});
+    eq(filteredArray !== arrayBeingFiltered, true);
+  },
+  'It should not mutate the array on which it is called.': function () {
+    var arrayBeingFiltered = [1, 2, 3];
+    filter(arrayBeingFiltered, function (ele) {
+      return ele > 2;
+    });
+    eq(arrayBeingFiltered[0], 1);
+    eq(arrayBeingFiltered[1], 2);
+    eq(arrayBeingFiltered[2], 3);
+  },
+  'It should return a new array that only has elements where callback returns true.': function() {
+    var filteredArray = filter([1, 2], function(number) {
+      return number > 1;
+    });
+    eq(filteredArray.length, 1);
+    eq(filteredArray[0], 2);
+  },
+  'If no elements pass the callback test, return an empty array.': function () {
+    var filteredArray = filter([1, 2], function(number) {
+      return number > 2;
+    });
+    eq(filteredArray.length, 0);
+  },
+  'Callback is invoked only for indexes of the array which have assigned values.': function () {
+    var counter = 0;
+    filter([, 1, , , 2, 3, ], function() {
+      counter++;
+    });
+    eq(counter, 3);
+  },
+  'It can run on an array-like object.': function () {
+    var object = {
+        0: 0,
+        1: 1,
+        2: 2,
+        length: 3
+      };
+    var filteredArray = filter(object, function (ele) {
+      return ele > 1;
+    });
+    eq(filteredArray[0], 2);
+    eq(filteredArray.length, 1);
+  },
+  'If the length property can not be converted to a number, use 0.': function () {
+    var object = {
+        0: 0,
+        1: 1,
+        2: 2,
+        length: 'chujun'
+      };
+    var filteredArray = filter(object, function (ele) {
+      return ele > -1;
+    });
+    eq(filteredArray.length, 0);
+  },
+  'If length can be converted to a number, use its corresponding number value.': function () {
+    var object = {
+        0: 0,
+        1: 1,
+        2: 2,
+        length: true
+      };
+    var filteredArray = filter(object, function (ele) {
+      return ele > -1;
+    });
+    eq(filteredArray[0], 0);
+    eq(filteredArray.length, 1);
+  }
+});
+</script>
