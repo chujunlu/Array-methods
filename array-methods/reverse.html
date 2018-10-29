@@ -1,6 +1,11 @@
 <script src="../simpletest.js"></script>
 <script>
   function reverse(array) {
+    if (typeof array === 'string') {
+      throw new TypeError("Cannot assign to read only property '0' of object '[object String]");
+    }
+
+    array = Object.prototype.valueOf.call(array);
     var copy = Array.prototype.slice.call(array);
     var endIndex = copy.length - 1;
 
@@ -18,23 +23,23 @@
   }
 
   tests({
-    'It should return an array.': function () {
+    '1.It should return an array.': function () {
       var result = reverse([]);
       eq(Array.isArray(result), true);
     },
-    'It should transpose the elements of the array.': function () {
+    '2.It should transpose the elements of the array.': function () {
       var testArray = [1, 2, 3];
       var result = reverse(testArray);
       eq(result[0], 3);
       eq(result[1], 2);
       eq(result[2], 1);
     },
-    'It should return a reference to the reversed array.': function () {
+    '3.It should return a reference to the reversed array.': function () {
       var testArray = [1, 2, 3];
       var result = reverse(testArray);
       eq(result, testArray);
     },
-    'It should not substitute holes for undefined.': function () {
+    '4.It should not substitute holes for undefined.': function () {
       var testArray = [, 1, , 2, ,];
       var result = reverse(testArray);
       eq(result.length, 5);
@@ -42,7 +47,7 @@
       eq(2 in result, false);
       eq(4 in result, false);
     },
-    'It should work for an array-like object.': function () {
+    '5.It should work for an array-like object.': function () {
       var object = {
         length: 2,
         0: 'traveling',
@@ -51,6 +56,70 @@
       var result = reverse(object);
       eq(result[0], "rock climbing");
       eq(result[1], "traveling");
+    },
+    '6.It should not reverse objects lacking a length property.': function () {
+      var testObject = {
+        0: 1,
+        1: 2,
+        2: 3
+      }
+      var result = reverse(testObject);
+      eq(result[0], 1);
+      eq(result[1], 2);
+      eq(result[2], 3);
+    },
+    '7.It should not reverse objects with a non-numeric length value.': function () {
+      var testObject = {
+        0: 1,
+        1: 2,
+        2: 3,
+        length: "I'm not a number"
+      }
+      var result = reverse(testObject);
+      eq(result[0], 1);
+      eq(result[1], 2);
+      eq(result[2], 3);
+      eq(result.length, "I'm not a number");
+    },
+    '8.If called on a primitive string, it should throw a TypeError.': function () {
+      var isTypeError = false;
+      try {
+        reverse('string');
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
+    },
+    '9.If called on a primitive number, it should return that value converted to a Number object.': function () {
+      var result = reverse(1);
+      eq(Number.prototype.isPrototypeOf(result), true);
+    },
+    '10.If called on a primitive boolean, it should return that value converted to a Boolean object.': function () {
+      var result = reverse(false);
+      eq(Boolean.prototype.isPrototypeOf(result), true);
+    },
+    '11.If called on a function object, it should return that object unchanged.': function () {
+      var foo = function () {}
+      var result = reverse(foo);
+      eq(Function.prototype.isPrototypeOf(result), true);
+    },
+    '12.If called on \'null\', it should throw a TypeError.': function () {
+      var isTypeError = false;
+      try {
+        reverse(null);
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
+    },
+    '13.If called on \'undefined\' it should throw a TypeError.': function () {
+      var isTypeError = false;
+      try {
+        reverse(undefined);
+      } catch (e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
     }
   });
 </script>
