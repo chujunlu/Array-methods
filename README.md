@@ -1,6 +1,6 @@
-# Array methods
+# A practice of test-driven development
 
-In this exercise, I recreate some of the array methods. The standard is to duplicate as close as possible what the native methods do.
+In this exercise, I recreated some of the array methods with a propose of better understanding test-driven development. The standard is to duplicate what the native array methods do as close as possible.
 
 Here are some guidelines: 
 - Write down all test cases I can think of 
@@ -10,7 +10,7 @@ Here are some guidelines:
 - Think of examples first 
 - Focus on observable behaviors but not implementation
 
-Ask about test cases: 
+Ask myself about my test cases: 
 - Are your tests lying? 
 - Are you testing the smallest pieces/Are your tests atomic enough? 
 - Are your tests in a sensible order? 
