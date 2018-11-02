@@ -1,0 +1,369 @@
+<script src="../simpletest.js"></script>
+<script>
+  function splice (array, start, deleteCount) {
+    var removed = [];
+    var copy = Array.prototype.slice.call(array);
+
+    if (arguments.length < 2) {//If start is obmitted
+      var start = array.length;
+    } else {//If start get passed in
+      start = Number(start);
+
+      if (isNaN(start)) {
+        start = 0;
+      } else {
+        start = parseInt(start);
+        
+        if (start < -array.length) {
+          start = 0;
+        } else if (start >= -array.length && start < 0) {
+          start += array.length;
+        } else if (start > array.length) {
+          start = array.length;
+        }
+      }
+    }
+
+    if (arguments.length < 3) {//If deleteCount is omitted.
+      var deleteCount = array.length - start;
+    } else {//If deleteCount get passed in
+      deleteCount = Number(deleteCount);
+
+      if (isNaN(deleteCount)) {
+        deleteCount = 0;
+      } else {
+        deleteCount = parseInt(deleteCount);
+        
+        if (deleteCount < 0) {
+          deleteCount = 0;
+        } else if (deleteCount > array.length - start) {
+          deleteCount = array.length - start;  
+        }
+      }
+    }
+
+    var deleteUntil = start + deleteCount;
+    var indexInArray = start;
+    
+    for (var i = start; i <= copy.length; i++) {//i: indexInCopy. Why <=: when start = copy.length, it will pass i <= copy.length, i === start can run.
+      //Only need to modify array and removed starting from start
+      if (i === start) {
+        for (var k = 3; k < arguments.length; k++) {//k: indexInArguments
+          array[indexInArray] = arguments[k];
+          indexInArray++;
+        }
+        if (deleteCount !== 0) {
+          if (i in copy) {
+            removed.push(copy[i]);
+          } else {//For holes
+            removed.length++;
+          }
+        } else {
+          if (i in copy) {
+            array[indexInArray] = copy[i];
+            indexInArray++;
+          } else {
+            indexInArray++;
+          }
+        }
+      } else if (i > start && i < deleteUntil) {
+        if (i in copy) {
+          removed.push(copy[i]);
+        } else {//For holes
+          removed.length++;
+        }
+      } else {//i >= deleteUntil
+        if (i in copy) {//to prevent adding holes
+          array[indexInArray] = copy[i];
+          indexInArray++;
+        } else {
+          indexInArray++;
+        }
+      }
+    }
+
+    //Remove unwanted elements in original array. They are at the end.
+    if (arguments.length > 3) {//If there are new elements to add
+      array.length = array.length - deleteCount + arguments.length - 3;
+    } else {
+      array.length = array.length - deleteCount;
+    }
+
+    return removed;
+  }
+
+  tests({
+    //General functionality tests
+    '1.It should return an array.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish);
+      eq(Array.isArray(result), true);
+    },
+    '2.It should return an array that contains the removed elements.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 3, 1);
+      eq(result[0], "mandarin");
+    },
+    '3.If no elements are removed, return an empty array.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, 0);
+      eq(result.length, 0);
+    },
+    '4.It should accept a startIndex as 2nd argument at which to start changing the array, and an optional deleteCount as 3rd argument.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, 2);
+      var expectedResult = ['drum', 'mandarin'];
+      var expectedFish = ['angel', 'clown', 'sturgeon'];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '5.It should accept elements to be added to the array.': function () {
+      var myFish = ['angel', 'clown', 'trumpet', 'sturgeon'];
+      var result = splice(myFish, 0, 2, 'parrot', 'anemone', 'blue');
+      var expectedResult = ["angel", "clown"];
+      var expectedFish =  ["parrot", "anemone", "blue", "trumpet", "sturgeon"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '6.If array is empty, it should return an empty array regardless of startIndex and/or deleteCount.': function () {
+      var result = splice([], 2, 3);
+      eq(result.length, 0);
+    },
+    //StartIndex edge cases
+    '7.If startIndex is omitted, startIndex = array.length; deleteCount = 0.': function () {
+      var testArray = [1, 2, 3];
+      var result = splice(testArray);
+      eq(result.length, 0);
+      eq(testArray.length, 3);
+    },
+    '8.If -array.length < startIndex < 0, add startIndex to array.length.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, -2, 1);
+      var expectedResult = ["mandarin"];
+      var expectedFish = ["angel", "clown", "sturgeon"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '9.If startIndex < -array.length, startIndex defaults to 0.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, -5, 1);
+      var expectedResult = ["angel"];
+      var expectedFish = ["clown", "mandarin", "sturgeon"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '10.If startIndex > array.length, startIndex = array.length.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 8, 2);
+      eq(result.length, 0);
+      var expectedFish = ["angel", "clown", "drum", "mandarin", "sturgeon"];
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '11.If startIndex can not be converted to a number, it defaults to 0.': function () {
+      var months = ['Jan', 'March', 'April', 'June'];
+      var result = splice(months, {}, 2);
+      var expectedResult = ["Jan", "March"];
+      var expectedMonths = ["April", "June"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      months.forEach(function (ele, i) {
+        eq(ele, expectedMonths[i]);
+      });
+    },
+    '12.If startIndex can be converted to a number, use it.': function () {
+      var months = ['Jan', 'March', 'April', 'June'];
+      var result = splice(months, true, 2);
+      var expectedResult = ["March", "April"];
+      var expectedMonths =  ["Jan", "June"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      months.forEach(function (ele, i) {
+        eq(ele, expectedMonths[i]);
+      });
+    },
+    '13.If startIndex is a decimal number, use its integer as startIndex.': function () {
+      var array = [1, 2, 3];
+      var result = splice(array, -1.6);
+      var expectedResult = [1, 2, 3].splice(-1);
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+    },
+    //DeleteCount edge cases
+    '14.If deleteCount is omitted, remove all elements from startIndex through the end.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2);
+      var expectedResult = ["mandarin", "sturgeon"];
+      var expectedFish = ["angel", "clown"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '15.If deleteCount > array.length - start, remove all elements from startIndex through the end.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, 3);
+      var expectedResult = ["mandarin", "sturgeon"];
+      var expectedFish = ["angel", "clown"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '16.If deleteCount <= 0, do not remove any element.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, -1);
+      eq(result.length, 0);
+      var expectedFish = ["angel", "clown", "mandarin", "sturgeon"];
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '17.If deleteCount can not be converted to a number, it defaults 0.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 0, 'chujun');
+      eq(result.length, 0);
+    },
+    '18.If deleteCount can be converted to a number, use it.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 0, true);
+      eq(result[0], "angel");
+    },
+    '19.If deleteCount is a decimal number, use its integer part as deleteCount.': function () {
+      var array = [1, 2, 3];
+      var result = splice(array, 0, 1.7);
+      var expectedResult = [1, 2, 3].splice(0, 1);
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      }); 
+    },
+    '20.It should not skip holes.': function () {
+      var testArray = [, , , ,];
+      var result = splice(testArray, 0, 2);
+      eq(result.length, 2);
+      eq(0 in result, false);
+      eq(1 in result, false);
+      eq(testArray.length, 2);
+      eq(0 in testArray, false);
+      eq(1 in testArray, false);
+    },
+    //Mixing in adding as well as deletions testing.
+    '21.If startIndex < -array.length, it should add new elements starting at index 0.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, -5, -1, 'parrot');
+      eq(result.length, 0);
+      var expectedFish = ["parrot", "angel", "clown", "mandarin", "sturgeon"];
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '22.If startIndex < -array.length, it should delete and then add elements starting at index 0.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, -5, 1, 'parrot', 'cod');
+      var expectedResult = ["angel"];
+      var expectedFish = ["parrot", "cod", "clown", "mandarin", "sturgeon"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '23.It can add new elements starting in the middle of array.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      splice(myFish, 2, 0, 'parrot', 'anemone', 'blue');
+      var expectedFish = ["angel", "clown", "parrot", "anemone", "blue", "mandarin", "sturgeon"];
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '24.If startIndex > array.length, it should add new elements starting at the end of array.': function () {
+      var myFish = ['angel', 'clown', 'drum', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 8, 1, 'cod');
+      eq(result.length, 0);
+      var expectedFish = ["angel", "clown", "drum", "mandarin", "sturgeon", "cod"];
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '25.It can handel deleting more than adding.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, 2, 'parrot');
+      var expectedResult = ["mandarin", "sturgeon"];
+      var expectedFish = ["angel", "clown", "parrot"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '26.It can handel adding more than deleting.': function () {
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var result = splice(myFish, 2, 1, 'parrot', 'anemone', 'blue');
+      var expectedResult = ["mandarin"];
+      var expectedFish = ["angel", "clown", "parrot", "anemone", "blue", "sturgeon"];
+      result.forEach(function (ele, i) {
+        eq(ele, expectedResult[i]);
+      });
+      myFish.forEach(function (ele, i) {
+        eq(ele, expectedFish[i]);
+      });
+    },
+    '27.It handles adding and deleting from an array with holes.': function () {
+      var testArray = [, , , , null, undefined];
+      var result = splice(testArray, 0, 2, undefined, null);
+      eq(result.length, 2);
+      eq(0 in result, false);
+      eq(1 in result, false);
+      var expectedArray = [undefined, null, , , null, undefined];
+      testArray.forEach(function (ele, i) {
+        eq(ele, expectedArray[i]);
+      });
+      eq(2 in testArray, false);
+      eq(3 in testArray, false);
+    },
+    //Array-like Object
+    '28.It should work for an array-like object.': function () {
+      var object = {
+        length: 3,
+        0: 0,
+        1: 1,
+        2: 2
+      };
+      var result = splice(object, 0, 2, 3, 4, 5);
+      eq(result[0], 0);
+      eq(result[1], 1);
+      eq(result.length, 2);
+      eq(object[0], 3);
+      eq(object[1], 4);
+      eq(object[2], 5);
+      eq(object[3], 2);
+      eq(object.length, 4);
+    }
+  });
+</script>
