@@ -82,11 +82,11 @@
       }
     }
 
-    //Remove unwanted elements in original array. They are at the end.
+    //Remove unwanted elements in the original array. They are already at the end.
     if (arguments.length > 3) {//If there are new elements to add
-      array.length = array.length - deleteCount + arguments.length - 3;
+      array.length = copy.length - deleteCount + arguments.length - 3;
     } else {
-      array.length = array.length - deleteCount;
+      array.length = copy.length - deleteCount;
     }
 
     return removed;
@@ -334,7 +334,14 @@
         eq(ele, expectedFish[i]);
       });
     },
-    '27.It handles adding and deleting from an array with holes.': function () {
+    '27. It changes array.length if more items are added than deleted and vice versa.': function () {
+      var myFish = ['angel', 'clown', 'trumpet', 'sturgeon'];
+      var removed = splice(myFish, 0, 2, 'parrot', 'anemone', 'blue');
+      eq(myFish.length, 5);
+      splice(myFish, 3, 2, 'gold');
+      eq(myFish.length, 4);
+    },
+    '28.It handles adding and deleting from an array with holes.': function () {
       var testArray = [, , , , null, undefined];
       var result = splice(testArray, 0, 2, undefined, null);
       eq(result.length, 2);
@@ -348,7 +355,7 @@
       eq(3 in testArray, false);
     },
     //Array-like Object
-    '28.It should work for an array-like object.': function () {
+    '29.It should work for an array-like object.': function () {
       var object = {
         length: 3,
         0: 0,
