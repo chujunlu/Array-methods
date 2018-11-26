@@ -2,12 +2,13 @@
 <script>
   function find(array, callback, optionalThisObject) {
     var findCallback = callback;
+    var length = array.length;
 
     if (optionalThisObject) {
       findCallback = callback.bind(optionalThisObject);
     }
 
-    for (var i = 0; i < array.length; i++) {
+    for (var i = 0; i < length; i++) {
       if (findCallback(array[i], i, array)) {
         return array[i];
       }
@@ -81,6 +82,29 @@
       });
 
       eq(result, 'Visited index 5 with value undefined');
+    },
+    'It should not visit elements that are appended to the array after the call to find begins.': function () {
+      var counter = 0;
+      var array = [1, 2, 3];
+      var result = find(array, function (element, index) {
+        if (index < 2) {
+          array.push(4);
+        }
+        counter++;
+        return element > 3;
+      });
+      eq(counter, 3);
+      eq(result, undefined);
+    },
+    'If an existing, unvisited element of the array is changed by callback, its value passed to the visiting callback will be the value at the time that find visits that element index.': function () {
+      var array = [1, 2, 3];
+      var result = find(array, function (element, index) {
+        if (index === 0) {
+          array.splice(2, 1, 4);
+        }
+        return element > 3;
+      });
+      eq(result, 4);
     },
     'It should not mutate the array on which it is called.': function () {
       var array = [1, 2];
